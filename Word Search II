@@ -1,0 +1,63 @@
+//______________________Trie+DFS Version_____________________
+
+class Solution {
+    private int m;
+    private int n;
+    private List<String> output;
+    
+    public List<String> findWords(char[][] board, String[] words) {
+        m = board.length;
+        n = board[0].length;
+        output = new ArrayList<>();
+        TrieNode trie = buildTrie(words);
+        
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                dfs(board, i, j, trie);
+            }
+        }
+        
+        return output;
+    }
+    
+    public void dfs(char[][] board, int i, int j, TrieNode trie){
+        // letter more than one use or don't match
+        char c = board[i][j];
+        if(c == '#' || trie.next[(c - 'a')] == null)   return;
+        
+        trie = trie.next[(c - 'a')];
+        // if it's a word: add to list and eliminate the word to avoid duplicate queries
+        if(trie.word != null){
+            output.add(trie.word);
+            trie.word = null;
+        }
+        
+        // DFS Steps(remember to mark used letters as #)
+        board[i][j] = '#';
+        if(i > 0)   dfs(board, i-1, j, trie);
+        if(j > 0)   dfs(board, i, j-1, trie);
+        if(i < m-1)   dfs(board, i+1, j, trie);
+        if(j < n-1)   dfs(board, i, j+1, trie);
+        board[i][j] = c;
+    }
+    
+    public TrieNode buildTrie(String[] words){
+        // a trie to store all words/plausible sequences of letters
+        TrieNode root = new TrieNode();
+        for(String word: words){
+            TrieNode p = root;
+            for(char letter: word.toCharArray()){
+                if(p.next[(letter - 'a')] == null)  p.next[(letter - 'a')] = new TrieNode();
+                p = p.next[(letter - 'a')];
+            }
+            //store the word at the end of the sequence
+            p.word = word;
+        }
+        return root;
+    }
+}
+
+class TrieNode {
+    public TrieNode[] next = new TrieNode[26];
+    public String word;
+}
